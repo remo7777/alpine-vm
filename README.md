@@ -40,8 +40,7 @@ Before you begin, ensure you have the following installed:
 ### Step 1: Clone the Repository
 Clone this repository to your local machine:
 ```bash
-git clone https://github.com/your-repo/alpine-qemu-docker-termux.git
-cd alpine-qemu-docker-termux
+git clone https://github.com/remo7777/alpine-vm.git && cd alpine-qemu-docker-termux
 ```
 ### Step 2: Run the Installation Script
 Run the `install_alpine.sh` script to install Alpine Linux, Docker, and set up QEMU:
