@@ -1,0 +1,44 @@
+# Use US layout with US variant
+KEYMAPOPTS="us us"
+
+# Hostname
+HOSTNAMEOPTS="-n alpine-vm"
+
+# Network interface configuration
+INTERFACESOPTS="auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+"
+
+# Timezone (Asia/Kolkata)
+TIMEZONEOPTS="Asia/Kolkata"
+
+# Proxy settings (None)
+PROXYOPTS="none"
+
+# NTP client (busybox)
+NTPOPTS="busybox"
+
+# APK Repositories (Main and Community)
+APKREPOSOPTS="-c -1"
+
+# SSH server setup (openssh)
+SSHDOPTS="-c openssh"
+
+# Allow root SSH login with password
+SSHDALLOWROOT="yes"
+
+# SSH Configuration Options: PermitRootLogin and PasswordAuthentication
+SSHD_CONFIG_OPTS="PermitRootLogin yes PasswordAuthentication yes"
+
+# No SSH key or URL for root
+SSHDKEY="none"
+
+# Skip user setup
+USEROPTS="no"
+
+# Disk configuration (Install Alpine on /dev/vda with sys mode)
+DISKOPTS="-v -m sys -s 0 /dev/vda"
+
