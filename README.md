@@ -50,7 +50,7 @@ bash install_alpine.sh
 
 After successfully booting it ask for Login: "`root`"
 then paste command wich set by `install_alpine.sh`.
-Some cases you copy something esle then copy command and paste on alpine vm promt:
+Some cases you copy something esle then copy command and paste on alpine vm prompt:
 ```bash
 mkdir -p /mnt/vm-shared && mount -t 9p -o trans=virtio vm-shared /mnt/vm-shared && setup-alpine -f /mnt/vm-shared/answers.txt
 ```
@@ -63,7 +63,7 @@ bash start_alpine.sh
 After successfully booting it ask for Login: "`root`"
 And it ask for root passowrd: "`?`" which you have set during `install_alpine.sh`
 then paste command wich set by `start_alpine.sh`.
-Some cases you copy something esle then copy command and paste on alpine vm promt:
+Some cases you copy something esle then copy command and paste on alpine vm prompt:
 ```bash
 mkdir -p /mnt/vm-shared && mount -t 9p -o trans=virtio vm-shared /mnt/vm-shared && setup-alpine -f /mnt/vm-shared/answers.txt
 ```
