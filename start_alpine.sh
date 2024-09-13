@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Variables
 # BIOS="/data/data/com.termux/files/usr/share/qemu/edk2-x86_64-secure-code.fd"
 PWd="${PWD}"
@@ -95,7 +94,7 @@ sleep 2
 # Start QEMU VM with Alpine ISO and disk image (background process)
 qemu-system-x86_64 -machine q35 -m 2048M -smp cpus=4 -cpu qemu64 \
     -drive file=$QCOW2_IMAGE,if=virtio \
-    -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375 \
+    -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375,hostfwd=tcp::9000-:9000 \
     -device virtio-net,netdev=n1 \
     -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
     -serial mon:stdio \
