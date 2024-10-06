@@ -92,11 +92,24 @@ sleep 2
 echo -e "\e[1;34m[*] \e[1;33mnow preparing for boot ( wait 5-10 minutes )\e[1;0m"
 sleep 2
 # Start QEMU VM with Alpine ISO and disk image (background process)
-qemu-system-x86_64 -machine q35 -m 2048M -smp cpus=4 -cpu qemu64 \
-    -drive file=$QCOW2_IMAGE,if=virtio \
-    -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375,hostfwd=tcp::9000-:9000 \
-    -device virtio-net,netdev=n1 \
-    -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
-    -serial mon:stdio \
-    -vga none \
-    -display none 
+if [[ $(uname -m) == "aarch64" ]]; then
+    qemu-system-x86_64 -machine q35 -m 2048M -smp cpus=4 -cpu qemu64 \
+        -drive file=$QCOW2_IMAGE,if=virtio \
+        -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375,hostfwd=tcp::9000-:9000 \
+        -device virtio-net,netdev=n1 \
+        -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
+        -serial mon:stdio \
+        -vga none \
+        -display none 
+else
+    qemu-system-arm -machine virt -m 2048M -smp cpus=4 -cpu max \
+        -drive file=$QCOW2_IMAGE,if=virtio \
+        -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375 \
+        -device virtio-net,netdev=n1 \
+        -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
+        -cdrom ${ALPINE_ISO}.iso \
+        -boot d \
+        -serial mon:stdio \
+        -vga none \
+        -display none 
+fi

@@ -9,12 +9,23 @@ user="$(mktemp)"
 szf="File Size of"
 # lb="${TMPDIR}/LB"
 ALPINE_ISO="alpine-x86_64"  # Alpine ISO file
-x01="alpine_sha256"         # sha256 checksum
 QCOW2_IMAGE="alpine.qcow2"      # Disk image for Alpine
 SHARED_FOLDER="$HOME/vm-shared" # Shared folder with host
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-3.20.3-x86_64.iso"
 ISO_SHA256="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-3.20.3-x86_64.iso.sha256"
 DOCKER_HOST_ADD="$HOME/.profile"
+
+if [[ $(uname -m) == "aarch64" ]]; then
+    ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-3.20.3-x86_64.iso"
+    ISO_SHA256="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-3.20.3-x86_64.iso.sha256"
+    ALPINE_ISO="alpine-x86_64"
+else
+    ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/armv7/alpine-virt-3.20.3-armv7.iso"
+    ISO_SHA256="https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/armv7/alpine-virt-3.20.3-armv7.iso.sha256"
+    ALPINE_ISO="alpine-arm"
+fi
+
+x01="ISO_SHA256"         # sha256 checksum
 
 VAR4=$(echo $(( $(stty size | cut -d ' ' -f 2) - 17)))
 PUT(){ echo -en "\033[${1};${2}H";}
@@ -99,6 +110,7 @@ progress() {
     printf "\e[32m [\e[32m Done \e[32m]\e[0m";
     echo "";
 }
+
 spin22 () {
     HIDECURSOR(){ echo -en "\033[?25l";}
     NORM(){ echo -en "\033[?12l\033[?25h";}
@@ -121,6 +133,7 @@ spin22 () {
     printf "\e[32m [ ${2}]\e[0m";
     echo "";
 }
+
 check_internet () {
 
 	echo -ne "\033[33m\r[*] \033[4;32mChecking Your Internet Connection... \e[0m"; 
@@ -131,6 +144,7 @@ check_internet () {
 	    exit 0
     fi
 }
+
 d_size () {
     stl3=$(curl -sIL "${ISO_URL}" | awk -F: '/content-length:/{sub("\r", "", $2); print $2}' | numfmt --to iec --format "%8.1f" | tail -1)
     (sleep 3) &> /dev/null & spin22 "${ALPINE_ISO}" ${stl3} "${szf}"
@@ -138,6 +152,10 @@ d_size () {
 
 dowload_zip () {
     #yes | cp x* ${PWd}
+    [ -f ${PWd}/${x01} ] && rm ${PWd}/${x01};
+
+    [ ! -f ${PWd}/${x01} ] && (curl --fail --retry 3 --location --output ${PWd}/${x01} "${ISO_SHA256}" --silent) &> /dev/null & progress ${x01};
+
     if [[ -f ${PWd}/${ALPINE_ISO}.iso ]] && [[ "$(cat ${PWd}/${x01} | awk '{print $1}')" == "$(sha256sum ${PWd}/${ALPINE_ISO}.iso|awk '{print $1}')" ]]; then
 	    (sleep 1) &> /dev/null & spin22 "${ALPINE_ISO}" " \bDone " "Downloading"
     else
@@ -145,9 +163,16 @@ dowload_zip () {
     fi
     sleep 2
 }
+
 install_package () {
-    (apt install root-repo && apt update && yes|apt install docker qemu-system-x86-64-headless qemu-common qemu-utils wget curl figlet openssh coreutils termux-api) &> /dev/null & spin22 "Packages" " \bDone " "Installing"
+    if [[ $(uname -m) == "aarch64" ]]; then
+        (apt install root-repo && apt update && yes | apt install docker qemu-system-x86-64-headless qemu-common qemu-utils wget curl figlet openssh coreutils termux-api) &> /dev/null & spin22 "Packages" " \bDone " "Installing"
+    else
+        (apt install root-repo && apt update && yes | apt install docker qemu-system-arm-headless qemu-common qemu-utils wget curl figlet openssh coreutils termux-api) &> /dev/null & spin22 "Packages" " \bDone " "Installing"
+    fi
+
 }
+
 setup_qemu () {
 
 # Remove existing QCOW2 image if present
@@ -191,16 +216,33 @@ sleep 2
 echo -e "\e[1;32m[*] \e[1;33mnow preparing installation ( wait 5-10 minutes )\e[1;0m"
 sleep 2
 # Start QEMU VM with Alpine ISO and disk image (background process)
-qemu-system-x86_64 -machine q35 -m 2048M -smp cpus=4 -cpu qemu64 \
-    -drive file=$QCOW2_IMAGE,if=virtio \
-    -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375 \
-    -device virtio-net,netdev=n1 \
-    -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
-    -cdrom ${ALPINE_ISO}.iso \
-    -boot d \
-    -serial mon:stdio \
-    -vga none \
-    -display none 
+if [[ $(uname -m) == "aarch64" ]]; then
+    
+    qemu-system-x86_64 -machine q35 -m 2048M -smp cpus=4 -cpu qemu64 \
+        -drive file=$QCOW2_IMAGE,if=virtio \
+        -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375 \
+        -device virtio-net,netdev=n1 \
+        -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
+        -cdrom ${ALPINE_ISO}.iso \
+        -boot d \
+        -serial mon:stdio \
+        -vga none \
+        -display none 
+
+else
+
+    qemu-system-arm -machine virt -m 2048M -smp cpus=4 -cpu max \
+        -drive file=$QCOW2_IMAGE,if=virtio \
+        -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::2375-:2375 \
+        -device virtio-net,netdev=n1 \
+        -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
+        -cdrom ${ALPINE_ISO}.iso \
+        -boot d \
+        -serial mon:stdio \
+        -vga none \
+        -display none 
+fi
+
 }
 
 #Print banner
