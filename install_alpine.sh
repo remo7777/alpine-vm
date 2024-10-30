@@ -227,7 +227,8 @@ if [[ $(uname -m) == "aarch64" ]]; then
         -boot d \
         -serial mon:stdio \
         -vga none \
-        -display none 
+        -display none \
+        --accel tcg,thread=multi,tb-size=2048
 
 else
 
@@ -240,7 +241,8 @@ else
         -boot d \
         -serial mon:stdio \
         -vga none \
-        -display none 
+        -display none \
+        --accel tcg,thread=multi,tb-size=2048
 fi
 
 }

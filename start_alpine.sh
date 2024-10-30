@@ -100,7 +100,8 @@ if [[ $(uname -m) == "aarch64" ]]; then
         -virtfs local,path=$SHARED_FOLDER,mount_tag=vm-shared,security_model=mapped \
         -serial mon:stdio \
         -vga none \
-        -display none 
+        -display none \
+        --accel tcg,thread=multi,tb-size=2048
 else
     qemu-system-arm -machine virt -m 2048M -smp cpus=4 -cpu max \
         -drive file=$QCOW2_IMAGE,if=virtio \
