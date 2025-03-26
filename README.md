@@ -54,6 +54,7 @@ Some cases you copy something esle then copy command and paste on alpine vm prom
 ```bash
 mkdir -p /mnt/vm-shared && mount -t 9p -o trans=virtio vm-shared /mnt/vm-shared && setup-alpine -f /mnt/vm-shared/answers.txt
 ```
+after all setup type command `poweroff` then open new session (termux)
 ### Step 3: Start the Alpine Linux VM
 After installation, you can start the Alpine Linux VM with Docker pre-configured using the following command:
 ```bash
