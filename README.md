@@ -66,7 +66,7 @@ And it ask for root passowrd: "`?`" which you have set during `install_alpine.sh
 then paste command wich set by `start_alpine.sh`.
 Some cases you copy something esle then copy command and paste on alpine vm prompt:
 ```bash
-mkdir -p /mnt/vm-shared && mount -t 9p -o trans=virtio vm-shared /mnt/vm-shared && setup-alpine -f /mnt/vm-shared/answers.txt
+chmod +x /vm-shared/docker_conf.sh && ./../vm-shared/docker_conf.sh
 ```
 The VM will start in headless mode, and you can SSH into it using the following command on termux environment:
 
